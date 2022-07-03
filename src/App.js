@@ -42,13 +42,31 @@ const questions = [
 ];
 
 function App() {
-
   const [currentQuestion, setCurrentQuestion] = React.useState(0);
   const [showColor, setShowColor] = React.useState(false);
-  const [currentIndexQuestion, setCurrentIndexQuestion] = React.useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(null);
+  const [showScore, setShowScore] = React.useState(false)
+  const [score, setScore] = React.useState(0);
+
+  const incrementCurrentQuestion = (index, isCorrect) => {
+    setCurrentQuestionIndex(index)
+    setShowColor(true)
+    setTimeout(() => {
+      setCurrentQuestionIndex(null)
+      setShowColor(false)
+      if (isCorrect) {
+        setScore(prev => prev + 1)
+      }
+      if (currentQuestion + 1 < questions.length) {
+        setCurrentQuestion(prev => prev + 1)
+      } else {
+        setShowScore(true)
+      }
+    }, 1000)
+  }
 
   const classNameActive = (isCorrect, index) => {
-    if (showColor && currentIndexQuestion === index) {
+    if (showColor && currentQuestionIndex === index) {
       if (isCorrect) {
         return "green"
       } else {
@@ -57,40 +75,32 @@ function App() {
     }
   }
 
-  const incrementCurrentQuestion = (index) => {
-    setCurrentIndexQuestion(index)
-    setShowColor(true)
-    setTimeout(() => {
-      setCurrentIndexQuestion(null)
-      setShowColor(false)
-      setCurrentQuestion(prev => prev + 1)
-    }, 1000)
-  }
-
   return (
     <div className="app">
       <div className="container">
-        {currentQuestion + 1 <= questions.length ? <div className="app-question">
-          <div className="app-question__left">
-            <div className="app-question__title">
-              Question {currentQuestion + 1}/<span className="app-question__not">{questions.length}</span>
+        {showScore ?
+          (<div className="app-question__score">You scored {score} out of {questions.length}</div>)
+          :
+          (<div className="app-question">
+            <div className="app-question__left">
+              <div className="app-question__title">
+                Questions {currentQuestion + 1}/<span className="app-question__not">{questions.length}</span>
+              </div>
+              <div className="app-question__text">
+                {questions[currentQuestion].questionText}
+              </div>
             </div>
-            <div className="app-question__text">
-              {questions[currentQuestion].questionText}
+            <div className="app-question__right">
+              <ul className="app-question__list">
+                {questions[currentQuestion].answerOptions.map((option, index) =>
+                  <li key={option.answerText} onClick={() => incrementCurrentQuestion(index, option.isCorrect)}
+                      className={"app-question__item " + classNameActive(option.isCorrect, index)}>
+                    {option.answerText}
+                  </li>)
+                }
+              </ul>
             </div>
-          </div>
-          <div className="app-question__right">
-            <ul className="app-question__list">
-              {questions[currentQuestion].answerOptions.map((option, index) =>
-                <li onClick={() => incrementCurrentQuestion(index)}
-                    className={"app-question__item " + classNameActive(option.isCorrect, index)}
-                    key={option.answerText}>
-                  {option.answerText}
-                </li>
-              )}
-            </ul>
-          </div>
-        </div> : <h1>Test end</h1>}
+          </div>)}
       </div>
     </div>
   );
